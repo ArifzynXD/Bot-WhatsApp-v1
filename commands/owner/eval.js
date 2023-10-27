@@ -5,6 +5,10 @@ module.exports = {
   name: "eval",
   description: "Eval",
   cmd: ["=>", ">"],
+  menu: {
+  	label: "Owner",
+  	example: "_code_"
+  },
   options: {
     withoutPrefix: true,
   },

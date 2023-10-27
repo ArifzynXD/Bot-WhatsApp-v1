@@ -5,6 +5,10 @@ module.exports = {
   name: "exec",
   description: "Exec",
   cmd: ["$"],
+  menu: {
+  	label: "Owner",
+  	example: "_code_"
+  }, 
   options: {
     withoutPrefix: true,
   },

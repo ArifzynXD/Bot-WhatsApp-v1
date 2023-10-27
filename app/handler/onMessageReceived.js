@@ -2,6 +2,7 @@ const { serialize } = require("../func/velixs.serialize.js");
 const { commands, _commands } = require("../func/loadCommands.js");
 const log = require("../func/log.js");
 const config = require("../../config.js");
+const chalk = require("chalk")
 
 class onMessageReceived {
   constructor(m, sock) {
@@ -34,6 +35,17 @@ class onMessageReceived {
       m.isSuperAdmin || participant_sender?.admin == "admin" ? true : false;
     m.isBotAdmin = participant_bot?.admin == "admin" ? true : false;
 
+    require("../database/loadDatabase.js")(m)
+    
+    if (m.message) {
+    	console.log(
+    	chalk.bgMagenta(' [===>] '),
+    	chalk.cyanBright('Time: ') + chalk.greenBright(new Date()) + '\n',
+    	chalk.cyanBright('Message: ') + chalk.greenBright(m.body || m.mtype) + '\n' +
+    	chalk.cyanBright('From:'), chalk.greenBright(m.pushName), chalk.yellow('- ' + m.sender) + '\n' +
+    	chalk.cyanBright('Chat Type:'), chalk.greenBright(!m.isGroup ? 'Private Chat' : 'Group Chat - ' + chalk.yellow(m.from))
+        );
+    }
     // console.log(participant_bot);
     try {
       let shouldContinue = true;

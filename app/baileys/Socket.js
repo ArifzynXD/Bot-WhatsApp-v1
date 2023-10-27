@@ -16,6 +16,9 @@ const sessions = new Map();
 const path = require("path")
 const retryCount = new Map();
 const chalk = require("chalk")
+const Database = require("../database/database")
+
+const database = new Database()
 
 const credentials = {
   dir: "./storage/wa_credentials/",
@@ -42,6 +45,18 @@ function uncache(module = '.') {
 
 const startSession = async (sessionId = "ilsya") => {
   if (isSessionExistAndRunning(sessionId)) return getSession(sessionId);
+
+  const content = await database.read()
+   if (content && Object.keys(content).length === 0) {
+      global.db = {
+         users: {},
+         groups: {},
+         ...(content || {}),
+      }
+      await database.write(global.db)
+   } else {
+      global.db = content
+   }
 
   const { version } = await fetchLatestBaileysVersion();
   const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
@@ -106,12 +121,6 @@ const startSession = async (sessionId = "ilsya") => {
     
     await Client(sock, store)
     
-    global.reloadFile = (file, options = {}) => {
-    	nocache(file, module => {
-    		console.log(chalk.keyword('yellow')(`command "${file}" telah diupdate,`))
-    		process.send("reset")
-        })
-    }
     global.command = {}
     const cmdFolder = path.join(__dirname, "../../commands")
     const fitur = fs.readdirSync(cmdFolder)
@@ -119,16 +128,28 @@ const startSession = async (sessionId = "ilsya") => {
     	const Arifzyn = fs.readdirSync(cmdFolder + "/" + res).filter((file) => file.endsWith(".js"))
     	for (let filename of Arifzyn) {
     		try {
-    			const req = "../../commands/" + res + "/" + filename
-    			global.command[filename] = require(req)
+    			const filePath = path.resolve(cmdFolder, res, filename);
+    			
+    			global.command[filename] = require(filePath);
+    			
+    			fs.watch(filePath, (event, filename) => {
+    				if (event === 'change') {
+    					console.log(`File changed. Restarting command: ${filename}`);
+    					delete require.cache[require.resolve(filePath)];
+    					global.command[filename] = require(filePath);
+                    }
+               })
     		} catch (e) {
-    			log.error("Command Error : " + e)
-    			delete global.command[filename]
+    			console.error(`Command Error in ${filename}:`, error);
+    			delete global.command[filename];
     		}
     	}
     })
-    console.log(Object.keys(global.command)) 
     
+    setInterval(async () => {
+      if (global.db) await database.write(global.db)
+   }, 30000)
+
     return sock;
   };
 
