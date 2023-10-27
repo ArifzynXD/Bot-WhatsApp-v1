@@ -1,0 +1,20 @@
+{
+  "users": {
+    "62895347198105@s.whatsapp.net": {
+      "limit": 15,
+      "lastChat": 1698398981767,
+      "premium": true,
+      "VIP": true,
+      "name": "Arifzyn.",
+      "banned": false
+    }
+  },
+  "groups": {
+    "120363160867785242@g.us": {
+      "lastChat": 1698399037446,
+      "mute": false,
+      "welcome": true,
+      "leave": true
+    }
+  }
+}
